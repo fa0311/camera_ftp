@@ -1,0 +1,19 @@
+{
+  "out_dir": "/app/camera_ftp/data",
+  "rules": [
+    {
+      "name": "BASE",
+      "input": [{ "type": "raw", "path_globs": ["**/incoming/*.*"] }],
+      "pipeline": [],
+      "outputs": [
+        {
+          "type": "jpeg",
+          "path": "output/{stem}-base.jpg",
+          "quality": 95,
+          "progressive": true,
+          "subsampling": "4:2:0"
+        }
+      ]
+    }
+  ]
+}

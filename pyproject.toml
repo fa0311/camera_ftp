@@ -1,0 +1,35 @@
+[project]
+name = "photo-ftp-processor"
+version = "0.1.0"
+requires-python = ">=3.11"
+dependencies = [
+  "pydantic>=2",
+  "pydantic-settings>=2",
+  "json5>=0.9",
+  "typer>=0.12",
+  "rich>=13",
+  "wcmatch>=8",
+  "celery>=5.4",
+  "redis>=5",
+  "rawpy>=0.21",
+  "imageio>=2.34",
+  "pillow>=10",
+  "numpy>=2",
+  "pillow-heif>=0.16",
+  "pyftpdlib>=1.5",
+  "opencv-python-headless>=4.10",
+]
+
+
+[project.scripts]
+photoftp = "app.cli:app"
+
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools]
+package-dir = {"" = "src"}
+
+[tool.setuptools.packages.find]
+where = ["src"]
