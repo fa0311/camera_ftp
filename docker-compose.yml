@@ -1,0 +1,56 @@
+services:
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+
+  worker:
+    build: .
+    depends_on:
+      - redis
+    environment:
+      # celery broker/backend
+      PHOTOFTP_BROKER_URL: redis://redis:6379/0
+      PHOTOFTP_BACKEND_URL: redis://redis:6379/0
+    volumes:
+      - ./incoming:/app/incoming
+      - ./data:/app/data
+      - ./configs:/app/configs
+    command: >
+      python -m celery -A app.queue.celery_app.celery_app worker -l INFO
+
+  ftp:
+    build: .
+    depends_on:
+      - redis
+    environment:
+      PHOTOFTP_BROKER_URL: redis://redis:6379/0
+      PHOTOFTP_BACKEND_URL: redis://redis:6379/0
+
+      # FTP login
+      PHOTOFTP_FTP_USER: user
+      PHOTOFTP_FTP_PASSWORD: pass
+
+      # FTP bind
+      PHOTOFTP_FTP_HOST: 0.0.0.0
+      PHOTOFTP_FTP_PORT: 2121
+
+      # Passive ports (外部クライアント対応用)
+      PHOTOFTP_FTP_PASSIVE_PORTS: "30000-30010"
+      # NAT越し公開するなら設定（例: サーバのグローバルIP）
+      # PHOTOFTP_FTP_MASQUERADE_ADDRESS: "x.x.x.x"
+    ports:
+      - "2121:2121"
+      - "30000-30010:30000-30010"
+    volumes:
+      - ./incoming:/app/incoming
+      - ./data:/app/data
+      - ./configs:/app/configs
+    command: >
+      photoftp ftp-serve
+      -c /app/configs/config.sample.jsonc
+      -i /app/incoming
+      --host 0.0.0.0
+      --port 2121
+      --user user
+      --password pass

@@ -1,14 +1,22 @@
 {
-  "out_dir": "/app/camera_ftp/data",
+  "out_dir": "/app/data",
   "rules": [
     {
       "name": "BASE",
       "input": [{ "type": "raw", "path_globs": ["**/incoming/*.*"] }],
       "pipeline": [],
       "outputs": [
+        { "type": "jpeg", "path": "output/{stem}-base.jpg", "quality": 95, "progressive": true, "subsampling": "4:2:0" }
+      ]
+    },
+    {
+      "name": "SHARP",
+      "input": [{ "type": "raw", "path_globs": ["**/incoming/*.*"] }],
+      "pipeline": [{ "type": "sharpness", "amount": 1.5, "radius": 1.5 }],
+      "outputs": [
         {
           "type": "jpeg",
-          "path": "output/{stem}-base.jpg",
+          "path": "output/{stem}-sharp.jpg",
           "quality": 95,
           "progressive": true,
           "subsampling": "4:2:0"
