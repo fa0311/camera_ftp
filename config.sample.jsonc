@@ -1,22 +1,23 @@
 {
-  "out_dir": "/app/data",
+  "mount_path": "./images",
+  "broker": "redis://localhost:6379/0",
   "rules": [
     {
       "name": "BASE",
-      "input": [{ "type": "raw", "path_globs": ["**/incoming/*.*"] }],
+      "input": [{ "type": "raw", "path_globs": ["**/*.*"], "options": {} }],
       "pipeline": [],
       "outputs": [
-        { "type": "jpeg", "path": "output/{stem}-base.jpg", "quality": 95, "progressive": true, "subsampling": "4:2:0" }
+        { "type": "jpeg", "path": "{stem}-base.jpg", "quality": 95, "progressive": true, "subsampling": "4:2:0" }
       ]
     },
     {
       "name": "SHARP",
-      "input": [{ "type": "raw", "path_globs": ["**/incoming/*.*"] }],
+      "input": [{ "type": "raw", "path_globs": ["**/*.*"], "options": {} }],
       "pipeline": [{ "type": "sharpness", "amount": 1.5, "radius": 1.5 }],
       "outputs": [
         {
           "type": "jpeg",
-          "path": "output/{stem}-sharp.jpg",
+          "path": "{stem}-sharp.jpg",
           "quality": 95,
           "progressive": true,
           "subsampling": "4:2:0"

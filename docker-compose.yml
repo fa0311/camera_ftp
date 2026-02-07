@@ -12,12 +12,13 @@ services:
       # celery broker/backend
       PHOTOFTP_BROKER_URL: redis://redis:6379/0
       PHOTOFTP_BACKEND_URL: redis://redis:6379/0
+      PHOTOFTP_CONFIG_PATH: /app/configs/config.sample.jsonc
     volumes:
       - ./incoming:/app/incoming
       - ./data:/app/data
       - ./configs:/app/configs
     command: >
-      python -m celery -A app.queue.celery_app.celery_app worker -l INFO
+      photoftp worker -l INFO
 
   ftp:
     build: .
@@ -26,6 +27,7 @@ services:
     environment:
       PHOTOFTP_BROKER_URL: redis://redis:6379/0
       PHOTOFTP_BACKEND_URL: redis://redis:6379/0
+      PHOTOFTP_CONFIG_PATH: /app/configs/config.sample.jsonc
 
       # FTP login
       PHOTOFTP_FTP_USER: user
@@ -47,8 +49,7 @@ services:
       - ./data:/app/data
       - ./configs:/app/configs
     command: >
-      photoftp ftp-serve
-      -c /app/configs/config.sample.jsonc
+      photoftp serve
       -i /app/incoming
       --host 0.0.0.0
       --port 2121

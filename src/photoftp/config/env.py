@@ -1,13 +1,10 @@
 from __future__ import annotations
 
+from pathlib import Path
+
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
-class Settings(BaseSettings):
+class Env(BaseSettings):
     model_config = SettingsConfigDict(env_prefix="PHOTOFTP_", extra="ignore")
-
-    broker_url: str = "redis://localhost:6379/0"
-    backend_url: str = "redis://localhost:6379/0"
-
-
-settings = Settings()
+    config_path: Path = Path("config.sample.jsonc")

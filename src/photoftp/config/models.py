@@ -1,30 +1,34 @@
 from __future__ import annotations
 
 from pathlib import Path
-from typing import Annotated, List, Literal, Optional, Union
+from typing import Annotated, List, Literal, Union
 
-from pydantic import BaseModel, Field
+from pydantic import AnyUrl, BaseModel, ConfigDict, Field
+
+
+class ConfigBase(BaseModel):
+    model_config = ConfigDict(extra="forbid")
 
 
 # -----------------------
 # pipeline ops
 # -----------------------
-class ExposureOp(BaseModel):
+class ExposureOp(ConfigBase):
     type: Literal["exposure"]
     ev: float = 0.0
 
 
-class ContrastOp(BaseModel):
+class ContrastOp(ConfigBase):
     type: Literal["contrast"]
     factor: float = 1.0
 
 
-class SaturationOp(BaseModel):
+class SaturationOp(ConfigBase):
     type: Literal["saturation"]
     factor: float = 1.0
 
 
-class SharpnessOp(BaseModel):
+class SharpnessOp(ConfigBase):
     type: Literal["sharpness"]
     amount: float = 0.0
     radius: float = 1.0
@@ -39,21 +43,26 @@ PipelineOp = Annotated[
 # -----------------------
 # inputs
 # -----------------------
-class RawDecodeOptions(BaseModel):
-    white_balance: Literal["camera", "auto", "custom"] = "camera"
-    gamma: Literal["linear", "srgb"] = "linear"
-    output_color: str = "srgb"
 
 
-class RawInput(BaseModel):
+class RawInput(ConfigBase):
     type: Literal["raw"]
     path_globs: List[str]
-    raw: Optional[RawDecodeOptions] = None
+    options: RawDecodeOptions
 
 
-class ImageInput(BaseModel):
+class RawDecodeOptions(ConfigBase):
+    white_balance: Literal["camera", "auto"] = "camera"
+
+
+class ImageDecodeOptions(ConfigBase):
+    pass
+
+
+class ImageInput(ConfigBase):
     type: Literal["image"]
     path_globs: List[str]
+    options: ImageDecodeOptions
 
 
 Input = Annotated[
@@ -65,7 +74,7 @@ Input = Annotated[
 # -----------------------
 # outputs
 # -----------------------
-class JpegOutput(BaseModel):
+class JpegOutput(ConfigBase):
     type: Literal["jpeg"]
     path: str
 
@@ -74,7 +83,7 @@ class JpegOutput(BaseModel):
     progressive: bool = True
 
 
-class WebpOutput(BaseModel):
+class WebpOutput(ConfigBase):
     type: Literal["webp"]
     path: str
 
@@ -91,13 +100,14 @@ Output = Annotated[
 # -----------------------
 # rule / config
 # -----------------------
-class Rule(BaseModel):
+class Rule(ConfigBase):
     name: str
     input: List[Input]
     pipeline: List[PipelineOp] = []
     outputs: List[Output]
 
 
-class AppConfig(BaseModel):
-    out_dir: Path = Path("data/output")
+class AppConfig(ConfigBase):
+    mount_path: Path = Path("images")
+    broker: AnyUrl
     rules: List[Rule]

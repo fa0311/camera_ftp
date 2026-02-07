@@ -3,7 +3,7 @@ from __future__ import annotations
 import cv2
 import numpy as np
 
-from app.config.models import PipelineOp
+from photoftp.config.models import PipelineOp
 
 
 def apply_pipeline(img: np.ndarray, ops: list[PipelineOp]) -> np.ndarray:
