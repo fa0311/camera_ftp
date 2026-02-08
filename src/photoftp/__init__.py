@@ -1,1 +1,0 @@
-"""Photo FTP processor package."""

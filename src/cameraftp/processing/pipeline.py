@@ -3,7 +3,7 @@ from __future__ import annotations
 import cv2
 import numpy as np
 
-from photoftp.config.models import PipelineOp
+from cameraftp.config.models import PipelineOp
 
 
 def apply_pipeline(img: np.ndarray, ops: list[PipelineOp]) -> np.ndarray:
@@ -32,4 +32,4 @@ def apply_pipeline(img: np.ndarray, ops: list[PipelineOp]) -> np.ndarray:
                 blurred = cv2.GaussianBlur(out, (0, 0), sigmaX=sigma, sigmaY=sigma)
                 out = out + amount * (out - blurred)
 
-    return np.clip(out, 0.0, 1.0)
+    return out

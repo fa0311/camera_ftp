@@ -1,5 +1,5 @@
 [project]
-name = "photo-ftp-processor"
+name = "camera-ftp-processor"
 version = "0.1.0"
 requires-python = ">=3.11"
 dependencies = [
@@ -22,7 +22,7 @@ dependencies = [
 
 
 [project.scripts]
-photoftp = "app.cli:app"
+cameraftp = "cameraftp.cli:app"
 
 [build-system]
 requires = ["setuptools>=68"]

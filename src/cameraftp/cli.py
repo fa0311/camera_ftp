@@ -1,31 +1,35 @@
 from __future__ import annotations
 
+import logging
 from pathlib import Path
 from typing import Optional
 
 import typer
-from rich import print
 
-from photoftp.config.env import Env
-from photoftp.config.loader import load_config
-from photoftp.ftp.server import FTPWorker, parse_passive_ports
-from photoftp.processing.decode_image import decode_image_to_float32
-from photoftp.processing.decode_raw import decode_raw_to_float32
-from photoftp.processing.encode import write_outputs
-from photoftp.processing.matcher import match_all
-from photoftp.processing.pipeline import apply_pipeline
-from photoftp.queue.tasks import TaskWorker
+from cameraftp.config.env import Env
+from cameraftp.config.loader import load_config
+from cameraftp.ftp.server import FTPWorker, parse_passive_ports
+from cameraftp.logging_config import setup_logging
+from cameraftp.processing.decode_image import decode_image_to_float32
+from cameraftp.processing.decode_raw import decode_raw_to_float32
+from cameraftp.processing.encode import write_outputs
+from cameraftp.processing.matcher import match_all
+from cameraftp.processing.pipeline import apply_pipeline
+from cameraftp.queue.tasks import TaskWorker
 
 app = typer.Typer()
+logger = logging.getLogger(__name__)
 
 
 @app.command()
 def validate_config(
     config: Path = typer.Argument(..., exists=True),
 ):
+    env = Env()
+    setup_logging(env.log_level)
     cfg = load_config(config)
-    print("[green]OK[/green]")
-    print(f"rules: {len(cfg.rules)}")
+    logger.info("OK")
+    logger.info("rules: %d", len(cfg.rules))
 
 
 @app.command()
@@ -33,10 +37,11 @@ def enqueue(
     target: Path = typer.Argument(...),
 ):
     env = Env()
+    setup_logging(env.log_level)
     settings = load_config(env.config_path)
     task_worker = TaskWorker(settings.broker)
     r = task_worker.add_task(target)
-    print(f"[green]Enqueued[/green] task id: {r.id}")
+    logger.info("Enqueued task id: %s", r.id)
 
 
 @app.command(
@@ -46,18 +51,19 @@ def worker(ctx: typer.Context):
     """Run a Celery worker (pass-through args supported)."""
 
     env = Env()
+    setup_logging(env.log_level)
     settings = load_config(env.config_path)
     task_worker = TaskWorker(settings.broker)
 
     def process_file(src: Path):
         matches = match_all(settings.rules, src)
-        print(f"Processing {src}: found {len(matches)} matches")
+        logger.info("Processing %s: found %d matches", src, len(matches))
         input = settings.mount_path.resolve(strict=True).joinpath(src)
         for m in matches:
             if m.input.type == "raw":
-                img = decode_raw_to_float32(input, m.input.options)
+                img = decode_raw_to_float32(input, m.input.white_balance)
             elif m.input.type == "image":
-                img = decode_image_to_float32(input, m.input.options)
+                img = decode_image_to_float32(input)
             else:
                 raise ValueError(f"Unknown input type: {m.input.type}")
 
@@ -83,13 +89,14 @@ def serve(
 ):
 
     env = Env()
+    setup_logging(env.log_level)
     settings = load_config(env.config_path)
     task_worker = TaskWorker(settings.broker)
     mount_abs = settings.mount_path.resolve(strict=True)
 
     def on_file_received(path: Path):
         relative = path.resolve(strict=True).relative_to(mount_abs)
-        print(f"Enqueued task for {relative}")
+        logger.info("Enqueued task for %s", relative)
         task_worker.add_task(relative)
 
     worker = FTPWorker(
@@ -103,5 +110,5 @@ def serve(
         homedir=settings.mount_path,
         perm="elradfmwMT",
     )
-    print(f"Starting FTP server on {host}:{port}...")
+    logger.info("Starting FTP server on %s:%s...", host, port)
     worker.worker(host, port)

@@ -11,16 +11,16 @@ from pydantic import AnyUrl
 class TaskWorker:
     def __init__(self, broker: AnyUrl):
         self.celery = Celery(
-            "photoftp",
+            "cameraftp",
             broker=str(broker),
         )
 
     def add_task(self, path: Path) -> AsyncResult:
-        return self.celery.send_task("photoftp.process_file", args=[str(path)])
+        return self.celery.send_task("cameraftp.process_file", args=[str(path)])
 
     def worker(self, argv: list[str], callable: Callable[[Path], None]):
         def process_file(path: str):
             callable(Path(path))
 
-        self.celery.task(name="photoftp.process_file")(process_file)
+        self.celery.task(name="cameraftp.process_file")(process_file)
         self.celery.worker_main(argv=["worker"] + argv)

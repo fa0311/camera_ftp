@@ -1,0 +1,32 @@
+{
+  "mount_path": "./images",
+  "broker": "redis://redis:6379/0",
+  "rules": [
+    {
+      "name": "BASE",
+      "input": [{ "type": "raw", "path_globs": ["*.ARW"] }],
+      "pipeline": [],
+      "outputs": [
+        {
+          "type": "jpeg",
+          "path": "output/{stem}.jpg",
+          "subsampling": "4:2:0"
+        },
+        {
+          "type": "png",
+          "path": "output/{stem}.png",
+          "dtype": "uint16"
+        },
+        {
+          "type": "tiff",
+          "path": "output/{stem}.tiff",
+          "dtype": "float32"
+        },
+        {
+          "type": "webp",
+          "path": "output/{stem}.webp"
+        }
+      ]
+    }
+  ]
+}

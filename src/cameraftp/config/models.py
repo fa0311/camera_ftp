@@ -48,21 +48,12 @@ PipelineOp = Annotated[
 class RawInput(ConfigBase):
     type: Literal["raw"]
     path_globs: List[str]
-    options: RawDecodeOptions
-
-
-class RawDecodeOptions(ConfigBase):
     white_balance: Literal["camera", "auto"] = "camera"
-
-
-class ImageDecodeOptions(ConfigBase):
-    pass
 
 
 class ImageInput(ConfigBase):
     type: Literal["image"]
     path_globs: List[str]
-    options: ImageDecodeOptions
 
 
 Input = Annotated[
@@ -79,7 +70,7 @@ class JpegOutput(ConfigBase):
     path: str
 
     quality: int = 95
-    subsampling: Literal["4:4:4", "4:2:2", "4:2:0"] = "4:2:0"
+    subsampling: Literal["4:4:4", "4:2:2", "4:2:0", "4:1:1", "4:4:0"] = "4:2:0"
     progressive: bool = True
 
 
@@ -88,11 +79,32 @@ class WebpOutput(ConfigBase):
     path: str
 
     quality: int = 90
+
+
+class ImageioWebpOutput(ConfigBase):
+    type: Literal["imageio-webp"]
+    path: str
+
+    quality: int = 90
     lossless: bool = False
 
 
+class PngOutput(ConfigBase):
+    type: Literal["png"]
+    path: str
+    dtype: Literal["uint8", "uint16", "float32"] = "uint8"
+    compression: int = 6
+
+
+class TiffOutput(ConfigBase):
+    type: Literal["tiff"]
+    path: str
+    dtype: Literal["uint8", "uint16", "float32"] = "uint8"
+    compression: int = 5
+
+
 Output = Annotated[
-    Union[JpegOutput, WebpOutput],
+    Union[JpegOutput, WebpOutput, ImageioWebpOutput, PngOutput, TiffOutput],
     Field(discriminator="type"),
 ]
 

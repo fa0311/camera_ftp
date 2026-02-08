@@ -6,7 +6,7 @@ from typing import List
 
 from wcmatch import glob
 
-from photoftp.config.models import Input, Rule
+from cameraftp.config.models import Input, Rule
 
 
 @dataclass(frozen=True)
@@ -23,7 +23,7 @@ def match_all(
     for rule in rules:
         for inp in rule.input:
             for pat in inp.path_globs:
-                if glob.globmatch(path, pat.lower(), flags=glob.GLOBSTAR):
+                if glob.globmatch(path, pat, flags=glob.GLOBSTAR):
                     results.append(MatchResult(rule=rule, input=inp))
                     break
     return results
