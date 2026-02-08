@@ -15,12 +15,12 @@
         {
           "type": "png",
           "path": "output/{stem}.png",
-          "dtype": "uint16"
+          "dtype": "uint8"
         },
         {
           "type": "tiff",
           "path": "output/{stem}.tiff",
-          "dtype": "float32"
+          "dtype": "uint8"
         },
         {
           "type": "webp",
