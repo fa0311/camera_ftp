@@ -19,7 +19,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        target: [cli, scheduler]
+        target: [worker, serve, cli]
 
     steps:
       - name: Checkout
