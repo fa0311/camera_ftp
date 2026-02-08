@@ -3,15 +3,13 @@ FROM python:3.12-slim AS runtime
 WORKDIR /app
 
 ENV PYTHONDONTWRITEBYTECODE=1 \
-    PYTHONUNBUFFERED=1
+    PYTHONUNBUFFERED=1 \
+    LANG=C.UTF-8 \
+    LC_ALL=C.UTF-8
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    build-essential \
-    libraw-dev \
-    libjpeg62-turbo-dev \
-    zlib1g-dev \
-    libwebp-dev \
-    libheif-dev \
+    imagemagick-6.q16hdri \
+    libimage-exiftool-perl \
     && rm -rf /var/lib/apt/lists/*
 
 COPY pyproject.toml /app/pyproject.toml

@@ -1,1 +1,1 @@
-"""Image processing pipeline."""
+"""Image processing via ImageMagick."""

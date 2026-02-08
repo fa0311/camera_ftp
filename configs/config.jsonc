@@ -1,30 +1,107 @@
 {
   "mount_path": "./images",
   "broker": "redis://redis:6379/0",
+  "magick": "convert",
+  "exiftool": "exiftool",
   "rules": [
     {
       "name": "BASE",
-      "input": [{ "type": "raw", "path_globs": ["*.ARW"] }],
-      "pipeline": [],
+      "input_globs": ["*.ARW"],
       "outputs": [
         {
-          "type": "jpeg",
           "path": "output/{stem}.jpg",
-          "subsampling": "4:2:0"
+          "args": ["-auto-orient", "-quality", "92"]
         },
         {
-          "type": "png",
-          "path": "output/{stem}.png",
-          "dtype": "uint8"
-        },
-        {
-          "type": "tiff",
           "path": "output/{stem}.tiff",
-          "dtype": "uint8"
+          "args": ["-auto-orient", "-depth", "32", "-compress", "LZW"]
         },
         {
-          "type": "webp",
-          "path": "output/{stem}.webp"
+          "path": "output/{stem}.avif",
+          "args": ["-auto-orient", "-quality", "60"]
+        },
+        {
+          "path": "output/{stem}.webp",
+          "args": ["-auto-orient", "-quality", "90"]
+        },
+        {
+          "path": "output/retouch/{stem}.jpg",
+          "args": [
+            "-auto-orient",
+            "-quality", "92",
+            "-contrast-stretch", "2%x2%",
+            "-modulate", "110,150,100",
+            "-gamma", "0.9",
+            "-unsharp", "0x1.6"
+          ]
+        },
+        {
+          "path": "output/retouch/{stem}-warm.jpg",
+          "args": [
+            "-auto-orient",
+            "-quality", "92",
+            "-channel", "R", "-level", "0%,96%",
+            "-channel", "B", "-level", "4%,100%",
+            "+channel",
+            "-modulate", "105,130,100",
+            "-gamma", "0.95"
+          ]
+        },
+        {
+          "path": "output/retouch/{stem}-cool.jpg",
+          "args": [
+            "-auto-orient",
+            "-quality", "92",
+            "-channel", "B", "-level", "0%,96%",
+            "-channel", "R", "-level", "4%,100%",
+            "+channel",
+            "-modulate", "100,125,100",
+            "-gamma", "0.95"
+          ]
+        },
+        {
+          "path": "output/retouch/{stem}-portrait.jpg",
+          "args": [
+            "-auto-orient",
+            "-quality", "92",
+            "-modulate", "105,85,100",
+            "-gamma", "1.08",
+            "-unsharp", "0x0.6"
+          ]
+        },
+        {
+          "path": "output/retouch/{stem}-landscape.jpg",
+          "args": [
+            "-auto-orient",
+            "-quality", "92",
+            "-contrast-stretch", "2%x2%",
+            "-modulate", "110,170,100",
+            "-gamma", "0.9",
+            "-unsharp", "0x1.8"
+          ]
+        },
+        {
+          "path": "output/retouch/{stem}-night.jpg",
+          "args": [
+            "-auto-orient",
+            "-quality", "92",
+            "-contrast-stretch", "1%x1%",
+            "-gamma", "0.8",
+            "-modulate", "110,80,100",
+            "-despeckle",
+            "-unsharp", "0x1.1"
+          ]
+        },
+        {
+          "path": "output/retouch/{stem}-mono.jpg",
+          "args": [
+            "-auto-orient",
+            "-quality", "92",
+            "-colorspace", "Gray",
+            "-contrast-stretch", "2%x2%",
+            "-gamma", "0.9",
+            "-unsharp", "0x1.0"
+          ]
         }
       ]
     }

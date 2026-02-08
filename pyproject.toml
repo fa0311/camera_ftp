@@ -11,13 +11,7 @@ dependencies = [
   "wcmatch>=8",
   "celery>=5.4",
   "redis>=5",
-  "rawpy>=0.21",
-  "imageio>=2.34",
-  "pillow>=10",
-  "numpy>=2",
-  "pillow-heif>=0.16",
   "pyftpdlib>=1.5",
-  "opencv-python-headless>=4.10",
 ]
 
 

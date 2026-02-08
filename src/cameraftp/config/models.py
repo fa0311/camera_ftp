@@ -1,125 +1,29 @@
 from __future__ import annotations
 
 from pathlib import Path
-from typing import Annotated, List, Literal, Union
 
-from pydantic import AnyUrl, BaseModel, ConfigDict, Field
+from pydantic import AnyUrl, BaseModel, ConfigDict
 
 
 class ConfigBase(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
 
-# -----------------------
-# pipeline ops
-# -----------------------
-class ExposureOp(ConfigBase):
-    type: Literal["exposure"]
-    ev: float = 0.0
-
-
-class ContrastOp(ConfigBase):
-    type: Literal["contrast"]
-    factor: float = 1.0
-
-
-class SaturationOp(ConfigBase):
-    type: Literal["saturation"]
-    factor: float = 1.0
-
-
-class SharpnessOp(ConfigBase):
-    type: Literal["sharpness"]
-    amount: float = 0.0
-    radius: float = 1.0
-
-
-PipelineOp = Annotated[
-    Union[ExposureOp, ContrastOp, SaturationOp, SharpnessOp],
-    Field(discriminator="type"),
-]
-
-
-# -----------------------
-# inputs
-# -----------------------
-
-
-class RawInput(ConfigBase):
-    type: Literal["raw"]
-    path_globs: List[str]
-    white_balance: Literal["camera", "auto"] = "camera"
-
-
-class ImageInput(ConfigBase):
-    type: Literal["image"]
-    path_globs: List[str]
-
-
-Input = Annotated[
-    Union[RawInput, ImageInput],
-    Field(discriminator="type"),
-]
-
-
-# -----------------------
-# outputs
-# -----------------------
-class JpegOutput(ConfigBase):
-    type: Literal["jpeg"]
+class Output(ConfigBase):
     path: str
-
-    quality: int = 95
-    subsampling: Literal["4:4:4", "4:2:2", "4:2:0", "4:1:1", "4:4:0"] = "4:2:0"
-    progressive: bool = True
+    args: list[str] = []
 
 
-class WebpOutput(ConfigBase):
-    type: Literal["webp"]
-    path: str
-
-    quality: int = 90
-
-
-class ImageioWebpOutput(ConfigBase):
-    type: Literal["imageio-webp"]
-    path: str
-
-    quality: int = 90
-    lossless: bool = False
-
-
-class PngOutput(ConfigBase):
-    type: Literal["png"]
-    path: str
-    dtype: Literal["uint8", "uint16", "float32"] = "uint8"
-    compression: int = 6
-
-
-class TiffOutput(ConfigBase):
-    type: Literal["tiff"]
-    path: str
-    dtype: Literal["uint8", "uint16", "float32"] = "uint8"
-    compression: int = 5
-
-
-Output = Annotated[
-    Union[JpegOutput, WebpOutput, ImageioWebpOutput, PngOutput, TiffOutput],
-    Field(discriminator="type"),
-]
-
-
-# -----------------------
-# rule / config
-# -----------------------
 class Rule(ConfigBase):
-    name: str
-    input: List[Input]
-    pipeline: List[PipelineOp] = []
-    outputs: List[Output]
+    name: str | None = None
+    input_globs: list[str]
+    input_args: list[str] = []
+    outputs: list[Output]
 
 
 class AppConfig(ConfigBase):
     mount_path: Path = Path("images")
     broker: AnyUrl
-    rules: List[Rule]
+    magick: str = "convert"
+    exiftool: str = "exiftool"
+    rules: list[Rule]

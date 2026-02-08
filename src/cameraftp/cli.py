@@ -10,11 +10,9 @@ from cameraftp.config.env import Env
 from cameraftp.config.loader import load_config
 from cameraftp.ftp.server import FTPWorker, parse_passive_ports
 from cameraftp.logging_config import setup_logging
-from cameraftp.processing.decode_image import decode_image_to_float32
-from cameraftp.processing.decode_raw import decode_raw_to_float32
-from cameraftp.processing.encode import write_outputs
+from cameraftp.processing.magick import Processor
 from cameraftp.processing.matcher import match_all
-from cameraftp.processing.pipeline import apply_pipeline
+from cameraftp.processing.placeholder import placeholder_format
 from cameraftp.queue.tasks import TaskWorker
 
 app = typer.Typer()
@@ -54,26 +52,32 @@ def worker(ctx: typer.Context):
     setup_logging(env.log_level)
     settings = load_config(env.config_path)
     task_worker = TaskWorker(settings.broker)
+    magick = Processor(settings.magick)
+    exiftool = Processor(settings.exiftool)
 
     def process_file(src: Path):
         matches = match_all(settings.rules, src)
         logger.info("Processing %s: found %d matches", src, len(matches))
         input = settings.mount_path.resolve(strict=True).joinpath(src)
         for m in matches:
-            if m.input.type == "raw":
-                img = decode_raw_to_float32(input, m.input.white_balance)
-            elif m.input.type == "image":
-                img = decode_image_to_float32(input)
-            else:
-                raise ValueError(f"Unknown input type: {m.input.type}")
+            for out in m.rule.outputs:
+                rel = placeholder_format(input, out.path)
+                out_path = settings.mount_path.joinpath(rel)
+                out_path.parent.mkdir(parents=True, exist_ok=True)
+                magick.run(
+                    input_path=input,
+                    output_path=out_path,
+                    inputs=m.rule.input_args,
+                    outputs=out.args,
+                )
+                exiftool.run(
+                    input_path=input,
+                    output_path=out_path,
+                    inputs=["-overwrite_original", "-TagsFromFile"],
+                    outputs=["-all:all", "-Orientation#=1"],
+                )
 
-            img = apply_pipeline(img, m.rule.pipeline)
-            write_outputs(
-                img,
-                m.rule.outputs,
-                settings.mount_path,
-                src_path=input,
-            )
+                logger.info("Wrote output: %s", out_path)
 
     task_worker.worker(ctx.args, process_file)
 
